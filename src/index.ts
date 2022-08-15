@@ -14,12 +14,16 @@ const connect = async () => {
 app.get('/', (req: Request, res: Response) => {
   res.send('hello world');
 });
-app.get('/:short', async (req: Request, res: Response) => {
+app.get('/:short', async (req: Request, res: Response, next: NextFunction) => {
   const url = await Url.findOne({ shortenedUrl: req.params.short });
   if (url == null) {
     return res.status(404).send('url not found');
   }
-  res.redirect(url.originalUrl);
+  url.click++;
+  url.save((err: CallbackError) => {
+    if (err) return next(err);
+    res.redirect(url.originalUrl);
+  });
 });
 app.post('/', (req: Request, res: Response, next: NextFunction) => {
   const newUrl = new Url(req.body);
